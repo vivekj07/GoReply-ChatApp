@@ -15,7 +15,7 @@ const ConnectDB = (uri) => {
 }
 
 const emitEvent = (req, event, users, data) => {
-    console.log("emiting event", event)
+    // console.log("emiting event", event)
 
     const usersSocket = getSockets(users)
     // const io = req.app.get("io")

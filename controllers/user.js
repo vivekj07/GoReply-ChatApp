@@ -40,7 +40,7 @@ const newUser = async (req, res, next) => {
         const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET)
         return res.status(201).cookie("chatApp-user-token", token, cookieOptions).json({
             success: true,
-            message: "User created Successfully",
+            message: `Welcome ${user.name}`,
             user
         })
     } catch (err) {
@@ -147,7 +147,6 @@ const sendFriendRequest = async (req, res, next) => {
     try {
 
         const { id } = req.body
-        console.log(id)
         if (!id) return next(new ErrorHandler("Please enter friends ID to send request", 400))
 
         const request = await Request.findOne({

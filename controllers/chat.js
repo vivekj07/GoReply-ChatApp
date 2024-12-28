@@ -9,7 +9,7 @@ import { delefilesFromCloudinary, emitEvent, uploadFlilesToCloudinary } from "..
 const newGroupChat = async (req, res, next) => {
     try {
         const { name, members } = req.body
-        console.log(name, members)
+        // console.log(name, members)
 
         if (!name || !members) return next(new ErrorHandler("Please enter all fields", 400))
 
@@ -104,7 +104,7 @@ const addMembers = async (req, res, next) => {
         if (!groupId) return next(new ErrorHandler("Please give group ID to add members", 400));
         let group = await Chat.findById(groupId)
 
-        if (members.length < 1) return next(new ErrorHandler("Please Select alleast one Member to add", 400));
+        if (!members || members.length < 1) return next(new ErrorHandler("Please Select atleast one Member to add", 400));
         if (!group) return next(new ErrorHandler("Group not found", 400))
         if (!group.groupChat) return next(new ErrorHandler("This is not a group", 400));
 
@@ -289,7 +289,7 @@ const getChatDetails = async (req, res, next) => {
     try {
         const populate = req.query.populate;
         const chatId = req.params.id
-        console.log("getting chatDetails from ", chatId)
+        // console.log("getting chatDetails from ", chatId)
 
         if (!chatId) return next(new ErrorHandler("Please Provide chatId", 400))
 
@@ -343,7 +343,7 @@ const renameGroup = async (req, res, next) => {
         if (chat.creator.toString() != req.userId.toString()) return next(new ErrorHandler("You are not admin", 400))
 
         chat.name = newName;
-        chat.save()
+        await chat.save()
 
         emitEvent(req, REFETCH_CHATS, chat.members)
         return res.status(201).json({
@@ -408,7 +408,6 @@ const deleteChat = async (req, res, next) => {
 
 const getMessages = async (req, res, next) => {
     try {
-        console.log("refetching")
         const chatId = req.params.id
         const page = req.query.page || 1;
 

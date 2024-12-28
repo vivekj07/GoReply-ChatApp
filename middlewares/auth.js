@@ -43,6 +43,4 @@ export const socketAuthentication = async (err, socket, next) => {
         console.log(err)
         return next(err)
     }
-
-
 }

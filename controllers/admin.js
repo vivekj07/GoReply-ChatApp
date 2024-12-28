@@ -1,8 +1,8 @@
+import jwt from "jsonwebtoken";
 import { ErrorHandler } from "../middlewares/error.js";
-import { Chat } from "../models/chat.js"
-import { Message } from "../models/message.js"
-import { User } from "../models/user.js"
-import jwt from "jsonwebtoken"
+import { Chat } from "../models/chat.js";
+import { Message } from "../models/message.js";
+import { User } from "../models/user.js";
 
 const adminLogin = async (req, res, next) => {
     try {
@@ -55,6 +55,7 @@ const adminLogout = async (req, res, next) => {
 
 
 }
+
 const getIsAdmin = (req, res, next) => {
     return res.status(200).json({
         success: true,
@@ -152,8 +153,8 @@ const getAllMessages = async (req, res, next) => {
                 content,
                 attachments,
                 sender: {
-                    name: sender.name,
-                    avatar: sender.avatar.url
+                    name: sender?.name || "Unknown",
+                    avatar: sender?.avatar?.url || ""
                 },
                 chat: chat._id,
                 groupChat: chat.groupChat,
@@ -192,7 +193,11 @@ const getDashboardStats = async (req, res, next) => {
                 Chat.countDocuments({ groupChat: true }),
                 Message.countDocuments(),
                 Chat.countDocuments({ groupChat: false }),
-                Message.find()
+                Message.find({
+                    createdAt:{
+                        $gte:SevenDaysBefore
+                    }
+                }).select("createdAt")
 
             ])
 
@@ -234,4 +239,4 @@ const getDashboardStats = async (req, res, next) => {
 
 
 
-export { getAllUsers, getAllChats, getAllMessages, getDashboardStats, adminLogin, adminLogout, getIsAdmin }
+export { adminLogin, adminLogout, getAllChats, getAllMessages, getAllUsers, getDashboardStats, getIsAdmin };
