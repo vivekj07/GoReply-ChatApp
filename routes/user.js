@@ -1,5 +1,5 @@
 import express from "express"
-import { getMyFriends, getMyProfile, getNotifications, handleRequest, login, logout, newUser, searchNewFriends, sendFriendRequest } from "../controllers/user.js"
+import { getMyFriends, getMyProfile, getNotifications, handleRequest, login, logout, newUser, searchNewFriends, sendFriendRequest, updateProfile } from "../controllers/user.js"
 import { singleAvatar } from "../middlewares/multer.js"
 import { isAuthenticated } from "../middlewares/auth.js"
 
@@ -11,6 +11,7 @@ app.post("/login", login)
 // Authenticated Users Only
 app.use(isAuthenticated)
 app.get("/profile", getMyProfile)
+app.put("/profile/update",singleAvatar, updateProfile)
 app.get("/search", searchNewFriends)
 
 app.post("/logout", logout)

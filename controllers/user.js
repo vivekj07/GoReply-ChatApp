@@ -4,7 +4,7 @@ import { ErrorHandler } from "../middlewares/error.js"
 import { Chat } from "../models/chat.js"
 import { Request } from "../models/request.js"
 import { User } from "../models/user.js"
-import { emitEvent, uploadFlilesToCloudinary } from "../utils/features.js"
+import { deleteFilesFromCloudinary, emitEvent, uploadFlilesToCloudinary } from "../utils/features.js"
 import { ALERT, NEW_REQUEST, REFETCH_CHATS } from "../constants/events.js"
 
 const newUser = async (req, res, next) => {
@@ -14,7 +14,7 @@ const newUser = async (req, res, next) => {
         if (!file) return next(new ErrorHandler("Please add Avatar", 400))
         if (!name || !username || !password || !bio) return next(new ErrorHandler("Please Enter all fields", 400))
 
-        const results = await uploadFlilesToCloudinary([file])
+        const results = await uploadFlilesToCloudinary([file],"ChatApp/UserProfiles")
 
 
         const avatar = {
@@ -90,6 +90,54 @@ const getMyProfile = async (req, res, next) => {
             user
         })
     } catch (err) {
+        next(err)
+    }
+}
+
+const updateProfile = async (req, res, next) => {
+    try {
+        const { name, username, password, bio } = req.body
+        const file = req.file
+        if (!name || !username || !bio) return next(new ErrorHandler("Please Enter all fields", 400))
+
+        let avatar;
+        if (file){
+            const results = await uploadFlilesToCloudinary([file],"ChatApp/UserProfiles")
+
+            avatar = {
+                public_id: results[0].public_id,
+                url: results[0].url
+            }
+        }
+
+        const user = await User.findById(req.userId)
+
+        if (!user) return next(new ErrorHandler("Please Relogin and try again"))
+
+        const avatarId=[user.avatar.public_id]
+        user.name=name;
+        user.username=username;
+        user.bio=bio;
+        if(password){
+            user.password=password;
+        }
+        if(avatar){
+            user.avatar=avatar
+        }
+
+        await user.save();
+
+        deleteFilesFromCloudinary(avatarId)
+
+        return res.status(200).json({
+            success: true,
+            message: `Profile Updated`,
+            user
+        })
+    } catch (err) {
+        if (err.code === 11000) {
+            err.message = "Username already exist"
+        }
         next(err)
     }
 }
@@ -308,5 +356,5 @@ const getMyFriends = async (req, res, next) => {
 
 export {
     getMyProfile, login, logout, newUser, searchNewFriends, sendFriendRequest, handleRequest,
-    getNotifications, getMyFriends
+    getNotifications, getMyFriends,updateProfile
 }

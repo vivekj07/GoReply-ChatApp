@@ -4,7 +4,7 @@ import { ErrorHandler } from "../middlewares/error.js"
 import { Chat } from "../models/chat.js"
 import { Message } from "../models/message.js"
 import { User } from "../models/user.js"
-import { delefilesFromCloudinary, emitEvent, uploadFlilesToCloudinary } from "../utils/features.js"
+import { deleteFilesFromCloudinary, emitEvent, uploadFlilesToCloudinary } from "../utils/features.js"
 
 const newGroupChat = async (req, res, next) => {
     try {
@@ -247,7 +247,7 @@ const sendAttachments = async (req, res, next) => {
 
         // Fille Uploading
 
-        const attachments = await uploadFlilesToCloudinary(files)
+        const attachments = await uploadFlilesToCloudinary(files,"ChatApp/Attachments")
 
         const message = await Message.create({
             content: "",
@@ -382,12 +382,12 @@ const deleteChat = async (req, res, next) => {
 
         messagesWithAttachments.forEach(({ attachments }) => {
             attachments.forEach((attachment) => {
-                allPublicIds.push(attachment.public_id)
+                allPublicIds.push(attachment?.public_id)
             })
         })
 
         await Promise.all([
-            delefilesFromCloudinary,
+            deleteFilesFromCloudinary(allPublicIds),
             chat.deleteOne(),
             Message.deleteMany({ chat: chatId })
         ])
